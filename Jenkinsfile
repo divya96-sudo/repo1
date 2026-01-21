@@ -1,15 +1,11 @@
 pipeline {
-  agent any
-  stages {
-    stage('print') {
-      steps {
-        sh '''#!/bin/bash
-echo "hello world"'''
-      }
-    }
+    agent any
 
-  }
-  environment {
-    qa = 'test'
-  }
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+    }
 }
