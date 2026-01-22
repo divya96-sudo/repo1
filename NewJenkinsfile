@@ -1,0 +1,33 @@
+pipeline {
+  agent any
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Publish HTML in Jenkins') {
+      steps {
+        sh 'mkdir -p html-report && cp index.html html-report/'
+        publishHTML([
+          allowMissing: false,
+          alwaysLinkToLastBuild: true,
+          keepAll: true,
+          reportDir: 'html-report',
+          reportFiles: 'index.html',
+          reportName: 'My Website'
+        ])
+      }
+    }
+
+    stage('Serve HTML for Browser') {
+      steps {
+        sh '''
+          echo "Starting Python HTTP server on port 8080..."
+          nohup python3 -m http.server 8080 &
+        '''
+      }
+    }
+  }
+}
