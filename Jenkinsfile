@@ -2,9 +2,20 @@ pipeline {
     agent any
 
     stages {
-        stage('Hello') {
+        stage('Checkout') {
             steps {
-                echo 'Hello World'
+                checkout scm
+            }
+        }
+
+        stage('Serve index.html') {
+            steps {
+                sh '''
+                echo "Starting web server..."
+                ls -l
+                python3 -m http.server 8080 &
+                sleep 5
+                '''
             }
         }
     }
