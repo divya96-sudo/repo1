@@ -7,11 +7,9 @@ pipeline {
       }
     }
 
-    stage('') {
+    stage('error') {
       steps {
-        sh '''echo "Starting server..."
-ls -l
-python3 -m http.server 8080'''
+        sh 'echo "Starting server..." && ls -l && python3 -m http.server 8080'
       }
     }
 
