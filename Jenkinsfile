@@ -7,11 +7,21 @@ pipeline {
       }
     }
 
-    stage('error') {
+    stage('Publish HTML') {
       steps {
-        sh 'echo "Starting server..." && ls -l && python3 -m http.server 8080'
+        // Create a folder for HTML reports
+        sh 'mkdir -p html-report && cp index.html html-report/'
+        
+        // Publish using Jenkins HTML Publisher
+        publishHTML([
+          allowMissing: false,
+          alwaysLinkToLastBuild: true,
+          keepAll: true,
+          reportDir: 'html-report',
+          reportFiles: 'index.html',
+          reportName: 'My Website'
+        ])
       }
     }
-
   }
 }
