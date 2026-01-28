@@ -25,13 +25,13 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                sh '''
+                sh """
                 gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${env.REGION}-docker.pkg.dev
                 docker build -t ${env.IMAGE_NAME}:latest .
                 docker tag ${env.IMAGE_NAME}:latest ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest
                 docker push ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest
                 # gcloud run deploy test-service --image ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest --platform managed --region ${env.REGION} --allow-unauthenticated
-                '''
+                """
             }
         }       
     }
