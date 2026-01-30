@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: vijayasharma582/frontend_evl:latest # The container image to use
+        ports:
+        - containerPort: 80 # The port your container exposes
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend # Matches the 'app: nginx' label in the Deployment
+  ports:
+    - protocol: TCP
+      port: 80 # The port the Service itself exposes
+      targetPort: 3000 # The port on the Pods to forward traffic to
+

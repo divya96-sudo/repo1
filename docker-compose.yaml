@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin1234
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    restart: always
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    ports:
+      - "4000:4000"
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: "postgresql://admin:admin1234@postgres:5432/mydatabase?schema=public&sslmode=disable"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # Use localhost for host browser access
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+
+
+
+
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://backend:5000
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGO_URL=mongodb://mongodb:27017/mydb
+      - JWT_SECRET=super_secret_key
+    restart: always
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongodb-community-server:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=Admin123@
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+
+
+

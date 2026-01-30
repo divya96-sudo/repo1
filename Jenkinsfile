@@ -2,18 +2,19 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = "https://github.com/divya96-sudo/repo2.git"
-        BRANCH = "main"
-        IMAGE_NAME = "sample"
         PROJECT = "training-2024-batch"
+        GIT_REPO = "${params.GIT_REPO}"
+        BRANCH = "${params.BRANCH}"
         REPO_NAME = "divya-repo"
+        IMAGE_NAME = "test"
         REGION  = "asia-south1"
     }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: env.BRANCH, credentialsId: '3febab8d-9a5d-4f6a-91ce-03e8b194a073', url: env.GIT_REPO
+                echo "Checking out branch ${env.BRANCH} from repo ${env.GIT_REPO}"
+                git branch: "${params.BRANCH}", url: "${params.GIT_REPO}"
             }
         }
 
@@ -23,20 +24,69 @@ pipeline {
             }
         }
 
-        stage('Build Image') {
+        stage('Image Build & Push') {
             steps {
                 sh """
-                #gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${env.REGION}-docker.pkg.dev
-                gcloud auth configure-docker asia-south1-docker.pkg.dev
-                docker build -t ${env.IMAGE_NAME}:latest .
-                docker tag ${env.IMAGE_NAME}:latest ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest
-                docker push ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest
-                # gcloud run deploy test-service --image ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest --platform managed --region ${env.REGION} --allow-unauthenticated
+                gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${env.REGION}-docker.pkg.dev
+
+                docker-compose -f docker-compose.yaml build
+
+                IMAGES=\$(docker-compose -f docker-compose.yaml config | grep 'image:' | awk '{print \$2}')
+
+                for image in \$IMAGES; do
+                IMAGE_NAME=\$(echo \$image | cut -d':' -f1)
+
+                docker tag \$image \
+                    ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/\$IMAGE_NAME:latest
+
+                docker push \
+                    ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/\$IMAGE_NAME:latest
+                done
                 """
             }
         }       
     }
 }
+
+// pipeline {
+//     agent any
+
+//     environment {
+//         GIT_REPO = "https://github.com/divya96-sudo/repo2.git"
+//         BRANCH = "main"
+//         IMAGE_NAME = "sample"
+//         PROJECT = "training-2024-batch"
+//         REPO_NAME = "divya-repo"
+//         REGION  = "asia-south1"
+//     }
+
+//     stages {
+//         stage('Git Checkout') {
+//             steps {
+//                 git branch: env.BRANCH, credentialsId: '3febab8d-9a5d-4f6a-91ce-03e8b194a073', url: env.GIT_REPO
+//             }
+//         }
+
+//         stage('Print Current Directory') {
+//             steps {
+//                 echo "Current directory is: ${env.WORKSPACE}"
+//             }
+//         }
+
+//         stage('Build Image') {
+//             steps {
+//                 sh """
+//                 #gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${env.REGION}-docker.pkg.dev
+//                 gcloud auth configure-docker asia-south1-docker.pkg.dev
+//                 docker build -t ${env.IMAGE_NAME}:latest .
+//                 docker tag ${env.IMAGE_NAME}:latest ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest
+//                 docker push ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest
+//                 # gcloud run deploy test-service --image ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:latest --platform managed --region ${env.REGION} --allow-unauthenticated
+//                 """
+//             }
+//         }       
+//     }
+// }
 
 // pipeline {
 //     agent any
