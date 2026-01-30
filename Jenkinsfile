@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        PROJECT = "training-2024-batch"
-        GIT_REPO = "${params.GIT_REPO}"
-        BRANCH = "${params.BRANCH}"
-        REPO_NAME = "divya-repo"
-        IMAGE_NAME = "test"
-        REGION  = "asia-south1"
+        PROJECT    = "training-2024-batch"
+        GIT_REPO   = "${params.GIT_REPO}"
+        BRANCH     = "${params.BRANCH}"
+        REPO_NAME  = "divya-repo"
+        REGION     = "asia-south1"
     }
 
     stages {
+
         stage('Git Checkout') {
             steps {
                 echo "Checking out branch ${env.BRANCH} from repo ${env.GIT_REPO}"
@@ -27,26 +27,37 @@ pipeline {
         stage('Image Build & Push') {
             steps {
                 sh """
-                gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${env.REGION}-docker.pkg.dev
+                # Authenticate to Google Artifact Registry
+                gcloud auth print-access-token | docker login \
+                    -u oauth2accesstoken \
+                    --password-stdin https://${env.REGION}-docker.pkg.dev
 
-                docker-compose -f docker-compose.yaml build
+                # Build all images from docker-compose.yaml
+                docker compose -f docker-compose.yaml build
 
-                IMAGES=\$(docker-compose -f docker-compose.yaml config | grep 'image:' | awk '{print \$2}')
+                # Get all images defined in docker-compose.yaml
+                IMAGES=\$(docker compose -f docker-compose.yaml config | grep 'image:' | awk '{print \$2}')
 
+                # Use Git commit SHA as Docker tag
+                TAG=\$(git rev-parse --short HEAD)
+
+                # Loop through all images, tag, and push
                 for image in \$IMAGES; do
-                IMAGE_NAME=\$(echo \$image | cut -d':' -f1)
+                    SERVICE_IMAGE=\$(echo \$image | cut -d':' -f1)
 
-                docker tag \$image \
-                    ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/\$IMAGE_NAME:latest
+                    docker tag \$image \
+                        ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/\$SERVICE_IMAGE:\$TAG
 
-                docker push \
-                    ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/\$IMAGE_NAME:latest
+                    docker push \
+                        ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/\$SERVICE_IMAGE:\$TAG
                 done
                 """
             }
-        }       
+        }
+
     }
 }
+
 
 // pipeline {
 //     agent any
