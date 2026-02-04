@@ -6,10 +6,10 @@ const appSecret = process.env.APP_SECRET;
 app.use(express.static("."));
 
 app.get("/secret-check", (req, res) => {
-  if (process.env.APP_SECRET === "mySuperSecretValue123") {
-    return res.send("Secret is correct!");
+  if (!appSecret) {
+    return res.status(500).send("Secret not loaded");
   }
-  res.status(403).send("Secret mismatch!");
+  res.send("Secret is loaded successfully ✅");
 });
 
 const PORT = process.env.PORT || 8080;
