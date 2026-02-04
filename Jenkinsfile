@@ -1,21 +1,37 @@
 pipeline {
     agent any
 
+    environment {
+        PROJECT = "training-2024-batch"
+        GIT_REPO = "${params.GIT_REPO}"
+        BRANCH = "${params.BRANCH}"
+        REPO_NAME = "divya-repo"
+        IMAGE_NAME = "html"
+        REGION  = "asia-south1"
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Git Checkout') {
             steps {
-                checkout scm
+                echo "Checking out branch ${env.BRANCH} from repo ${env.GIT_REPO}"
+                git branch: "${params.BRANCH}", url: "${params.GIT_REPO}"
             }
         }
 
-        stage('Serve index.html') {
+        stage('Print Current Directory') {
             steps {
-                sh '''
-                echo "Starting web server..."
-                ls -l
-                python3 -m http.server 8080 &
-                sleep 5
-                '''
+                echo "Current directory is: ${env.WORKSPACE}"
+            }
+        }
+
+        stage('Image Build & Push') {
+            steps {
+                sh """
+                gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${env.REGION}-docker.pkg.dev
+                docker build -t ${env.IMAGE_NAME}:latest .
+                docker tag ${env.IMAGE_NAME}:latest ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:${env.GIT_COMMIT}
+                docker push ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:${env.GIT_COMMIT}
+                """
             }
         }
     }
