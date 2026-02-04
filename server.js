@@ -9,7 +9,7 @@ app.get("/secret-check", (req, res) => {
   if (!appSecret) {
     return res.status(500).send("Secret not loaded");
   }
-  res.send("Secret is loaded successfully ✅");
+  res.send(`Secret is loaded successfully ✅ <br> Secret value: ${appSecret}`);
 });
 
 const PORT = process.env.PORT || 8080;
