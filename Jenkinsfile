@@ -34,5 +34,12 @@ pipeline {
                 """
             }
         }
+        // stage ("Deploy App"){
+        //     steps{
+        //         sh """
+        //         gcloud run deploy html-service --image ${env.REGION}-docker.pkg.dev/${env.PROJECT}/${env.REPO_NAME}/${env.IMAGE_NAME}:${env.GIT_COMMIT} --platform managed --region ${env.REGION}  --allow-unauthenticated --port 80
+        //         """
+        //     }
+        // }
     }
 }
