@@ -42,7 +42,7 @@ pipeline {
           --region ${REGION} \
           --allow-unauthenticated \
           --port 8080 --service-account 930642755164-compute@developer.gserviceaccount.com \
-          --update-secrets APP_SECRET=projects/${COMMON_PROJECT}/secrets/APP_SECRET
+          --update-secrets APP_SECRET=projects/${COMMON_PROJECT}/secrets/APP_SECRET/versions/latest
         """
       }
     }
