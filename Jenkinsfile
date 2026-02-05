@@ -41,8 +41,8 @@ pipeline {
           --platform managed \
           --region ${REGION} \
           --allow-unauthenticated \
-          --port 8080 --service-account 930642755164-compute@developer.gserviceaccount.com
-
+          --port 8080 --service-account 930642755164-compute@developer.gserviceaccount.com \
+          --update-secrets projects/16790711151/secrets/APP_SECRET
         """
       }
     }
