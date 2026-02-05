@@ -31,21 +31,20 @@ pipeline {
       }
     }
 
-    // stage('Deploy to Cloud Run (Dev Project)') {
-    //   steps {
-    //     sh """
-    //     gcloud config set project ${DEV_PROJECT}
+    stage('Deploy to Cloud Run (Dev Project)') {
+      steps {
+        sh """
+        gcloud config set project ${DEV_PROJECT}
 
-    //     gcloud run deploy html-service \
-    //       --image ${REGION}-docker.pkg.dev/${COMMON_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:${GIT_COMMIT} \
-    //       --platform managed \
-    //       --region ${REGION} \
-    //       --allow-unauthenticated \
-    //       --port 8080 \
-    //       --set-secrets APP_SECRET=APP_SECRET:latest
-    //     """
-    //   }
-    // }
+        gcloud run deploy html-service \
+          --image ${REGION}-docker.pkg.dev/${COMMON_PROJECT}/${REPO_NAME}/${IMAGE_NAME}:${GIT_COMMIT} \
+          --platform managed \
+          --region ${REGION} \
+          --allow-unauthenticated \
+          --port 8080 
+        """
+      }
+    }
   }
 }
 
