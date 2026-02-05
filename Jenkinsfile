@@ -9,6 +9,7 @@ pipeline {
     REPO_NAME      = "test-repo"
     IMAGE_NAME     = "html"
     REGION         = "asia-south1"
+    APP_SECRET     = "${params.APP_SECRET}"
   }
 
   stages {
@@ -42,6 +43,7 @@ pipeline {
           --region ${REGION} \
           --allow-unauthenticated \
           --port 8080 --service-account 930642755164-compute@developer.gserviceaccount.com \
+          --update-secrets "APP_SECRET=${params.APP_SECRET}:latest"
         """
       }
     }
@@ -49,7 +51,6 @@ pipeline {
 }
 
           // --update-secrets "APP_SECRET=projects/16790711151/secrets/APP_SECRET:latest"
-
 // pipeline {
 //     agent any
 
